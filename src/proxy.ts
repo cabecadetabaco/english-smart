@@ -5,16 +5,6 @@ import { createServerClient } from "@supabase/ssr";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public routes through without auth checks
-  if (
-    pathname === "/" ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/public") ||
-    pathname.startsWith("/api/")
-  ) {
-    return NextResponse.next();
-  }
-
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -38,7 +28,8 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Refresh the session on every request
+  // IMPORTANT: Always refresh the session so cookies are synced
+  // between browser and server on every request
   const {
     data: { user },
   } = await supabase.auth.getUser();

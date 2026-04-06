@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,31 +17,22 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-
-      // Login via browser client - sets cookies automatically
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      if (authError || !data.user) {
-        setError("Email ou senha incorretos.");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Email ou senha incorretos.");
         setLoading(false);
         return;
       }
 
-      // Query profile for role
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
-
-      const destination = profile?.role === "admin" ? "/admin/dashboard" : "/student/dashboard";
-
-      // Full page redirect
-      window.location.href = destination;
+      // Full page redirect - cookies were set by the API route
+      window.location.href = data.redirect;
     } catch {
       setError("Erro de conexao. Tente novamente.");
       setLoading(false);
