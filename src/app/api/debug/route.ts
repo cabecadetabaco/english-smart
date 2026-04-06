@@ -1,29 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 
-export async function GET(request: NextRequest) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("es-access-token")?.value;
-  const allCookies = cookieStore.getAll().map((c) => c.name);
+export async function GET() {
+  const user = await getUser();
 
-  let decoded = null;
-  if (token) {
-    try {
-      const payload = Buffer.from(token.split(".")[1], "base64url").toString("utf8");
-      decoded = JSON.parse(payload);
-    } catch (e: any) {
-      decoded = { error: e.message };
-    }
+  if (!user) {
+    return NextResponse.json({ step: "getUser", result: "null - would redirect to login" });
   }
 
+  const supabase = await createClient();
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, full_name, role")
+    .eq("id", user.id)
+    .single();
+
   return NextResponse.json({
-    hasCookie: !!token,
-    tokenLength: token?.length ?? 0,
-    allCookieNames: allCookies,
-    decodedSub: decoded?.sub ?? null,
-    decodedEmail: decoded?.email ?? null,
-    decodedExp: decoded?.exp ?? null,
-    now: Math.floor(Date.now() / 1000),
-    expired: decoded?.exp ? decoded.exp < Math.floor(Date.now() / 1000) : null,
+    step: "all",
+    user: { id: user.id, email: user.email },
+    profile: profile,
+    profileError: profileError?.message ?? null,
+    wouldRedirect: !profile ? "/login (no profile)" : profile.role !== "admin" ? "/student/dashboard" : "none - would show admin dashboard",
   });
 }
