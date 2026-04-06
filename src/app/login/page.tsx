@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -17,21 +18,31 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const supabase = createClient();
+
+      // Login via browser client - sets cookies automatically
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Erro ao fazer login.");
+      if (authError || !data.user) {
+        setError("Email ou senha incorretos.");
         setLoading(false);
         return;
       }
 
-      window.location.href = data.redirect;
+      // Query profile for role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .single();
+
+      const destination = profile?.role === "admin" ? "/admin/dashboard" : "/student/dashboard";
+
+      // Full page redirect
+      window.location.href = destination;
     } catch {
       setError("Erro de conexao. Tente novamente.");
       setLoading(false);
@@ -39,147 +50,56 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: "#050A18" }}
-    >
-      <div className="w-full max-w-md">
-        <div className="glass-card rounded-2xl p-8 shadow-2xl border border-white/10">
-          {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/assets/logos/logo-badge-color.jpg"
-              alt="English Smart"
-              width={80}
-              height={80}
-              className="rounded-xl"
-            />
-          </div>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", background: "#050A18", position: "relative", overflow: "hidden" }}>
+      {/* Background orbs */}
+      <div style={{ position: "absolute", width: "400px", height: "400px", borderRadius: "50%", background: "rgba(0,212,255,0.06)", filter: "blur(100px)", top: "-100px", left: "-100px", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", width: "300px", height: "300px", borderRadius: "50%", background: "rgba(0,102,255,0.08)", filter: "blur(80px)", bottom: "-50px", right: "-50px", pointerEvents: "none" }} />
 
-          {/* Title */}
-          <h1
-            className="text-2xl font-bold text-white text-center mb-1"
-            style={{ fontFamily: "var(--font-syne)" }}
-          >
-            English Smart
-          </h1>
-          <p
-            className="text-sm text-gray-400 text-center mb-8"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
-            Acesse sua area do aluno
-          </p>
+      <div style={{ width: "100%", maxWidth: "420px", position: "relative", zIndex: 1 }}>
+        {/* Logo */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "40px" }}>
+          <Image src="/assets/logos/logo-badge-color.jpg" alt="English Smart" width={72} height={72} style={{ borderRadius: "50%", marginBottom: "16px" }} />
+          <h1 style={{ fontFamily: "var(--font-syne), sans-serif", fontWeight: 800, fontSize: "1.5rem", color: "#F0F6FF", margin: 0 }}>English Smart</h1>
+          <p style={{ fontFamily: "var(--font-dm-sans), sans-serif", fontSize: "0.9rem", color: "#4A6080", margin: "6px 0 0" }}>Acesse sua area do aluno</p>
+        </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Form card */}
+        <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", padding: "40px" }}>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm text-center">
+              <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "10px", padding: "12px 16px", fontFamily: "var(--font-dm-sans)", fontSize: "0.875rem", color: "#FCA5A5" }}>
                 {error}
               </div>
             )}
 
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-300 mb-1.5"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="seu@email.com"
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
-              />
+              <label style={{ display: "block", fontFamily: "var(--font-dm-sans)", fontSize: "0.85rem", fontWeight: 500, color: "#8BA0BF", marginBottom: "8px" }}>Email</label>
+              <input type="email" required placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)}
+                style={{ width: "100%", padding: "12px 16px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", color: "#F0F6FF", fontFamily: "var(--font-dm-sans)", fontSize: "0.95rem", outline: "none", boxSizing: "border-box" }} />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-300 mb-1.5"
-              >
-                Senha
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  {showPassword ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  )}
+              <label style={{ display: "block", fontFamily: "var(--font-dm-sans)", fontSize: "0.85rem", fontWeight: 500, color: "#8BA0BF", marginBottom: "8px" }}>Senha</label>
+              <div style={{ position: "relative" }}>
+                <input type={showPassword ? "text" : "password"} required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)}
+                  style={{ width: "100%", padding: "12px 16px", paddingRight: "48px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", color: "#F0F6FF", fontFamily: "var(--font-dm-sans)", fontSize: "0.95rem", outline: "none", boxSizing: "border-box" }} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#4A6080", fontSize: "1.1rem" }}>
+                  {showPassword ? "🙈" : "👁️"}
                 </button>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                background: "linear-gradient(135deg, #06b6d4, #8b5cf6)",
-              }}
-            >
+            <button type="submit" disabled={loading}
+              style={{ width: "100%", padding: "14px", background: loading ? "rgba(0,212,255,0.4)" : "linear-gradient(135deg, #00D4FF, #0066FF)", color: "#fff", border: "none", borderRadius: "12px", fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "1rem", cursor: loading ? "not-allowed" : "pointer", boxShadow: loading ? "none" : "0 0 20px rgba(0,212,255,0.2)" }}>
               {loading ? "Entrando..." : "Entrar"}
             </button>
           </form>
-
-          {/* Back link */}
-          <div className="mt-6 text-center">
-            <Link
-              href="/"
-              className="text-sm text-gray-400 hover:text-cyan-400 transition-colors"
-            >
-              Voltar ao site
-            </Link>
-          </div>
         </div>
+
+        <p style={{ fontFamily: "var(--font-dm-sans)", textAlign: "center", marginTop: "24px", fontSize: "0.875rem" }}>
+          <Link href="/" style={{ color: "#8BA0BF", textDecoration: "none" }}>← Voltar ao site</Link>
+        </p>
       </div>
     </div>
   );
