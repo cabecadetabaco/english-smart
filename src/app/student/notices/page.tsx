@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getClientUser } from "@/lib/supabase/client";
 import Badge from "@/components/ui/Badge";
 
 interface Notice {
@@ -57,9 +57,7 @@ export default function NoticesPage() {
 
   useEffect(() => {
     async function init() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = getClientUser();
       if (!user) {
         window.location.href = "/login";
         return;

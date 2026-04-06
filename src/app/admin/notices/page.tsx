@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getClientUser } from "@/lib/supabase/client";
 import Badge from "@/components/ui/Badge";
 
 interface Notice {
@@ -43,9 +43,7 @@ export default function AdminNoticesPage() {
 
   useEffect(() => {
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = getClientUser();
       if (!user) {
         window.location.href = "/login";
         return;
@@ -74,9 +72,7 @@ export default function AdminNoticesPage() {
   async function createNotice() {
     if (!title.trim() || !content.trim()) return;
     setSubmitting(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = getClientUser();
 
     const { data } = await supabase
       .from("notices")

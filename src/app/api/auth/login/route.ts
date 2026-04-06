@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   // Simple cookie with the access token - that's it
   response.cookies.set("es-access-token", data.session.access_token, {
     path: "/",
-    httpOnly: true,
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: data.session.expires_in,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getClientUser } from "@/lib/supabase/client";
 import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 
@@ -33,9 +33,7 @@ export default function GradesPage() {
 
   useEffect(() => {
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = getClientUser();
       if (!user) {
         window.location.href = "/login";
         return;
@@ -81,9 +79,7 @@ export default function GradesPage() {
     if (isNaN(val) || val < 0 || val > 10) return;
 
     setSubmitting(mission.id);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = getClientUser();
 
     await supabase
       .from("lesson_progress")

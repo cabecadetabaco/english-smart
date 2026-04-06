@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Badge from "@/components/ui/Badge";
 import type { Metadata } from "next";
@@ -14,11 +14,9 @@ export default async function ModuleDetailPage({
   params: Promise<{ moduleId: string }>;
 }) {
   const { moduleId } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
+  const supabase = await createClient();
 
   const { data: mod } = await supabase
     .from("modules")

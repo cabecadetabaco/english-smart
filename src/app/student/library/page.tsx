@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getClientUser } from "@/lib/supabase/client";
 import Badge from "@/components/ui/Badge";
 
 interface LibraryItem {
@@ -43,9 +43,7 @@ export default function LibraryPage() {
 
   useEffect(() => {
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = getClientUser();
       if (!user) {
         window.location.href = "/login";
         return;

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import Badge from "@/components/ui/Badge";
 import CheckboxProgress from "@/components/student/CheckboxProgress";
 import type { Metadata } from "next";
@@ -14,11 +14,9 @@ export default async function LessonPage({
   params: Promise<{ moduleId: string; lessonId: string }>;
 }) {
   const { moduleId, lessonId } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
+  const supabase = await createClient();
 
   const { data: lesson } = await supabase
     .from("lessons")
