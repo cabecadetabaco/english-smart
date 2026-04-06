@@ -1,63 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
-export async function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const token = request.cookies.get("es-access-token")?.value;
 
-  let response = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // IMPORTANT: Always refresh the session so cookies are synced
-  // between browser and server on every request
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Redirect unauthenticated users away from protected routes
-  if (
-    !user &&
-    (pathname.startsWith("/student") || pathname.startsWith("/admin"))
-  ) {
+  // Not logged in and trying to access protected routes -> login
+  if (!token && (pathname.startsWith("/student") || pathname.startsWith("/admin"))) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Guard admin routes: check user role
-  if (user && pathname.startsWith("/admin")) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "admin") {
-      return NextResponse.redirect(
-        new URL("/student/dashboard", request.url)
-      );
-    }
-  }
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
