@@ -39,36 +39,16 @@ CREATE TRIGGER on_auth_user_created
 -- RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Students can see their own profile
-CREATE POLICY "Students can view own profile"
+-- All authenticated users can view profiles
+CREATE POLICY "Authenticated users can view all profiles"
   ON public.profiles FOR SELECT
-  USING (auth.uid() = id);
+  USING (auth.role() = 'authenticated');
 
--- Admins can see all profiles
-CREATE POLICY "Admins can view all profiles"
-  ON public.profiles FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.id = auth.uid() AND p.role = 'admin'
-    )
-  );
-
--- Students can update their own profile
-CREATE POLICY "Students can update own profile"
+-- Users can update their own profile
+CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
-
--- Admins can update all profiles
-CREATE POLICY "Admins can update all profiles"
-  ON public.profiles FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.id = auth.uid() AND p.role = 'admin'
-    )
-  );
 
 -- Service role can insert (for the trigger)
 CREATE POLICY "Service role can insert profiles"
