@@ -25,11 +25,11 @@ interface AdminLayoutWrapperProps {
 
 const adminNavItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: "\u{1F4CA}" },
-  { href: "/admin/alunos", label: "Alunos", icon: "\u{1F465}" },
-  { href: "/admin/notas", label: "Notas", icon: "\u{1F4DD}" },
-  { href: "/admin/conteudo", label: "Conteudo", icon: "\u{1F4DA}" },
-  { href: "/admin/avisos", label: "Avisos", icon: "\u{1F4E2}" },
-  { href: "/admin/agendamentos", label: "Agendamentos", icon: "\u{1F4C5}" },
+  { href: "/admin/students", label: "Alunos", icon: "\u{1F465}" },
+  { href: "/admin/grades", label: "Notas", icon: "\u{1F4DD}" },
+  { href: "/admin/content", label: "Conteudo", icon: "\u{1F4DA}" },
+  { href: "/admin/notices", label: "Avisos", icon: "\u{1F4E2}" },
+  { href: "/admin/scheduling", label: "Agendamentos", icon: "\u{1F4C5}" },
 ];
 
 function AdminSidebar({ profile }: { profile: Profile }) {

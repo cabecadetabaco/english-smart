@@ -25,13 +25,13 @@ interface SidebarProps {
 
 const navItems = [
   { href: "/student/dashboard", label: "Dashboard", icon: "\u{1F4CA}" },
-  { href: "/student/avisos", label: "Avisos", icon: "\u{1F4E2}" },
-  { href: "/student/modulos", label: "Modulos", icon: "\u{1F4DA}" },
-  { href: "/student/biblioteca", label: "Biblioteca", icon: "\u{1F4D6}" },
-  { href: "/student/tarefas", label: "Tarefas", icon: "\u2705" },
-  { href: "/student/calendario", label: "Calendario", icon: "\u{1F4C5}" },
-  { href: "/student/conquistas", label: "Conquistas", icon: "\u{1F3C6}" },
-  { href: "/student/perfil", label: "Perfil", icon: "\u{1F464}" },
+  { href: "/student/notices", label: "Avisos", icon: "\u{1F4E2}" },
+  { href: "/student/modules", label: "Modulos", icon: "\u{1F4DA}" },
+  { href: "/student/library", label: "Biblioteca", icon: "\u{1F4D6}" },
+  { href: "/student/tasks", label: "Tarefas", icon: "\u2705" },
+  { href: "/student/calendar", label: "Calendario", icon: "\u{1F4C5}" },
+  { href: "/student/achievements", label: "Conquistas", icon: "\u{1F3C6}" },
+  { href: "/student/profile", label: "Perfil", icon: "\u{1F464}" },
 ];
 
 export default function Sidebar({ profile, moduleProgress }: SidebarProps) {
@@ -186,7 +186,7 @@ export default function Sidebar({ profile, moduleProgress }: SidebarProps) {
                       {moduleProgress.map((mod) => (
                         <Link
                           key={mod.id}
-                          href={`/student/modulos/${mod.id}`}
+                          href={`/student/modules/${mod.id}`}
                           style={{
                             display: "block",
                             padding: "6px 0",

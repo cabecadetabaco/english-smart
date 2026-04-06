@@ -29,19 +29,19 @@ interface Notification {
 
 const pageNames: Record<string, string> = {
   "/student/dashboard": "Dashboard",
-  "/student/avisos": "Avisos",
-  "/student/modulos": "Modulos",
-  "/student/biblioteca": "Biblioteca",
-  "/student/tarefas": "Tarefas",
-  "/student/calendario": "Calendario",
-  "/student/conquistas": "Conquistas",
-  "/student/perfil": "Perfil",
+  "/student/notices": "Avisos",
+  "/student/modules": "Modulos",
+  "/student/library": "Biblioteca",
+  "/student/tasks": "Tarefas",
+  "/student/calendar": "Calendario",
+  "/student/achievements": "Conquistas",
+  "/student/profile": "Perfil",
   "/admin/dashboard": "Dashboard",
-  "/admin/alunos": "Alunos",
-  "/admin/notas": "Notas",
-  "/admin/conteudo": "Conteudo",
-  "/admin/avisos": "Avisos",
-  "/admin/agendamentos": "Agendamentos",
+  "/admin/students": "Alunos",
+  "/admin/grades": "Notas",
+  "/admin/content": "Conteudo",
+  "/admin/notices": "Avisos",
+  "/admin/scheduling": "Agendamentos",
 };
 
 export default function TopBar({ profile, onMenuToggle }: TopBarProps) {
@@ -294,7 +294,7 @@ export default function TopBar({ profile, onMenuToggle }: TopBarProps) {
                 href={
                   profile.role === "admin"
                     ? "/admin/dashboard"
-                    : "/student/perfil"
+                    : "/student/profile"
                 }
                 style={{
                   display: "block",
